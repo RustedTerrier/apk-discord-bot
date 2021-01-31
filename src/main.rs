@@ -64,6 +64,11 @@ impl EventHandler for Handler {
                             println!("Error sending message: {:?}", why);
                         }
                     }
+                    "meme"  => {
+                        if let Err(why) = msg.channel_id.say(&ctx.http, "memes").await {
+                            println!("Error sending message: {:?}", why);
+                        }
+                    }
                     "ping" => {
                         if let Err(why) = msg.channel_id.say(&ctx.http, "pong").await {
                             println!("Error sending message: {:?}", why);
