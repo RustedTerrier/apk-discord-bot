@@ -1,16 +1,22 @@
 use serenity::{
     async_trait,
-    model::{channel::Message, gateway::Ready},
-    prelude::*,
     framework::standard::{
-        Args, CommandOptions, CommandResult, CommandGroup,
-        DispatchError, HelpOptions, help_commands, Reason, StandardFramework,
-        macros::{command, group, help, check, hook},
+        help_commands,
+        macros::{check, command, group, help, hook},
+        Args, CommandGroup, CommandOptions, CommandResult, DispatchError, HelpOptions, Reason,
+        StandardFramework,
     },
     http::Http,
+    model::{channel::Message, gateway::Ready},
+    prelude::*,
+};
+use std::{
+    collections::{HashMap, HashSet},
+    env,
+    fmt::Write,
+    sync::Arc,
 };
 use unicode_segmentation::UnicodeSegmentation; // 1.6.0
-use std::{collections::{HashMap, HashSet}, env, fmt::Write, sync::Arc};
 
 const PREFIX: &str = "apk ";
 
@@ -63,8 +69,8 @@ impl EventHandler for Handler {
                             println!("Error sending message: {:?}", why);
                         }
                     }
-                    _      => {if &msg.content[4..9] == "purge " {}
-                                
+                    _      => {if msg.content.chars().count() > 9 {if &msg.content[4..9] == "purge " {}        
+                        }
                     }
                 }
             }
@@ -77,10 +83,7 @@ impl EventHandler for Handler {
 
 #[tokio::main]
 async fn main() {
-
-    let token = env::var("DISCORD_TOKEN").expect(
-        "Expected a token in the environment",
-    );
+    let token = env::var("DISCORD_TOKEN").expect("Expected a token in the environment");
 
     let http = Http::new_with_token(&token);
 
@@ -96,24 +99,27 @@ async fn main() {
                 Ok(bot_id) => (owners, bot_id.id),
                 Err(why) => panic!("Could not access the bot id: {:?}", why),
             }
-        },
+        }
         Err(why) => panic!("Could not access application info: {:?}", why),
     };
 
-    
-    let framework = StandardFramework::new()
-        .configure(|c| c
-                   .with_whitespace(true)
-                   .on_mention(Some(bot_id))
-                   .prefix("apk ")
-                   // In this case, if "," would be first, a message would never
-                   // be delimited at ", ", forcing you to trim your arguments if you
-                   // want to avoid whitespaces at the start of each.
-                   .delimiters(vec![", ", ","])
-                   // Sets the bot's owners. These will be used for commands that
-                   // are owners only.
-                   .owners(owners));
-    let mut client = Client::builder(&token).event_handler(Handler).framework(framework).await.expect("Err creating client");
+    let framework = StandardFramework::new().configure(|c| {
+        c.with_whitespace(true)
+            .on_mention(Some(bot_id))
+            .prefix("apk ")
+            // In this case, if "," would be first, a message would never
+            // be delimited at ", ", forcing you to trim your arguments if you
+            // want to avoid whitespaces at the start of each.
+            .delimiters(vec![", ", ","])
+            // Sets the bot's owners. These will be used for commands that
+            // are owners only.
+            .owners(owners)
+    });
+    let mut client = Client::builder(&token)
+        .event_handler(Handler)
+        .framework(framework)
+        .await
+        .expect("Err creating client");
 
     if let Err(why) = client.start().await {
         println!("Client error: {:?}", why);
