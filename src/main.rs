@@ -43,7 +43,6 @@ impl EventHandler for Handler {
                                         `apk ban [username]`
                                         `apk purge <number of lines>`",
                                     );
-
                                     e
                                 });
 
