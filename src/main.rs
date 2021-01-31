@@ -9,60 +9,64 @@ use serenity::{
     },
     http::Http,
 };
-
+use unicode_segmentation::UnicodeSegmentation; // 1.6.0
 use std::{collections::{HashMap, HashSet}, env, fmt::Write, sync::Arc};
 
 const PREFIX: &str = "apk ";
 
 pub struct MessageId(pub u64);
 
+#[group]
+#[only_in(guild)]
 struct Handler;
 
 #[async_trait]
 impl EventHandler for Handler {
     async fn message(&self, ctx: Context, msg: Message) {
         //If the first 4 letters of the message are the prefix
-        if &msg.content[0..4] == PREFIX {
-            match &msg.content[4..] {//Cycle through the commands and see if it is a command
-                "info" => {
-                    if let Err(why) = msg
-                        .channel_id
-                        .send_message(&ctx.http, |m| {
-                            m.embed(|e| {
-                                e.title("**Apk help**");
-                                e.description(
-                                    "Apk is a discord bot to moderate *The Opposition*. The prefix is `apk`.
+        if msg.content.chars().count() > 4 {
+            if &msg.content[0..4] == PREFIX {
+                match &msg.content[4..] {//Cycle through the commands and see if it is a command
+                    "info" => {
+                        if let Err(why) = msg
+                            .channel_id
+                            .send_message(&ctx.http, |m| {
+                                m.embed(|e| {
+                                    e.title("**Apk help**");
+                                    e.description(
+                                        "Apk is a discord bot to moderate *The Opposition*. The prefix is `apk`.
 
-                                    **Commands**
-                                    `apk ping`
-                                    `apk mute [username]`
-                                    `apk kick [username]`
-                                    `apk ban [username]`
-                                    `apk purge <number of lines>`",
-                                );
+                                        **Commands**
+                                        `apk ping`
+                                        `apk mute [username]`
+                                        `apk kick [username]`
+                                        `apk ban [username]`
+                                        `apk purge <number of lines>`",
+                                    );
 
-                                e
-                            });
+                                    e
+                                });
 
-                            m
-                        })
-                        .await
-                    {
-                        println!("Error sending message: {:?}", why);
+                                m
+                            })
+                            .await
+                        {
+                            println!("Error sending message: {:?}", why);
+                        }
                     }
-                }
-                "memes" => {
-                    if let Err(why) = msg.channel_id.say(&ctx.http, "memes").await {
-                        println!("Error sending message: {:?}", why);
+                    "memes" => {
+                        if let Err(why) = msg.channel_id.say(&ctx.http, "memes").await {
+                            println!("Error sending message: {:?}", why);
+                        }
                     }
-                }
-                "ping" => {
-                    if let Err(why) = msg.channel_id.say(&ctx.http, "pong").await {
-                        println!("Error sending message: {:?}", why);
+                    "ping" => {
+                        if let Err(why) = msg.channel_id.say(&ctx.http, "pong").await {
+                            println!("Error sending message: {:?}", why);
+                        }
                     }
-                }
-                _      => {if &msg.content[4..9] == "purge " {}
-                            
+                    _      => {if &msg.content[4..9] == "purge " {}
+                                
+                    }
                 }
             }
         }
